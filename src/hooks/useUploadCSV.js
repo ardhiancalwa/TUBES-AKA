@@ -6,6 +6,14 @@ const useUploadCSV = () => {
   const [data, setData] = useState([]);
   const [globalDivisor, setGlobalDivisor] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
+  const [sortOrder, setSortOrder] = useState("asc"); // 'asc' or 'desc'
+  const [runningTimes, setRunningTimes] = useState({
+    mergeSortIterative: [],
+    mergeSortRecursive: [],
+    quickSortIterative: [],
+    quickSortRecursive: [],
+  });
+
   const itemsPerPage = 10;
 
   const handleFileUpload = (event) => {
@@ -62,6 +70,46 @@ const useUploadCSV = () => {
       )
     );
   };
+  
+  const handleSort = () => {
+    const numbers = data.map((item) => item.number);
+    const startTimes = {};
+    const endTimes = {};
+
+    // Record times for each sorting algorithm
+    const recordRunningTime = (key, func) => {
+      startTimes[key] = performance.now();
+      const result = func([...numbers]);
+      endTimes[key] = performance.now();
+      return result;
+    };
+
+    const sortedData = {
+      mergeSortIterative: recordRunningTime("mergeSortIterative", mergeSortIterative),
+      mergeSortRecursive: recordRunningTime("mergeSortRecursive", mergeSortRecursive),
+      quickSortIterative: recordRunningTime("quickSortIterative", quickSortIterative),
+      quickSortRecursive: recordRunningTime("quickSortRecursive", quickSortRecursive),
+    };
+
+    // Convert results to ascending/descending
+    const sortFn = sortOrder === "asc" ? (a, b) => a - b : (a, b) => b - a;
+    const sortedNumbers = sortedData.mergeSortRecursive.sort(sortFn);
+
+    // Update data and running times
+    setData((prevData) =>
+      prevData.map((item, index) => ({
+        ...item,
+        number: sortedNumbers[index],
+      }))
+    );
+
+    setRunningTimes({
+      mergeSortIterative: endTimes.mergeSortIterative - startTimes.mergeSortIterative,
+      mergeSortRecursive: endTimes.mergeSortRecursive - startTimes.mergeSortRecursive,
+      quickSortIterative: endTimes.quickSortIterative - startTimes.quickSortIterative,
+      quickSortRecursive: endTimes.quickSortRecursive - startTimes.quickSortRecursive,
+    });
+  };
 
   const totalPages = Math.ceil(data.length / itemsPerPage);
   const currentData = data.slice(
@@ -83,17 +131,27 @@ const useUploadCSV = () => {
     globalDivisor,
     currentPage,
     itemsPerPage,
-    handleFileUpload,
-    handleDivisorChange,
-    handleNumberChange,
-    handleRowDivisorChange,
     handleFirst,
     handleLast,
     handlePrevious,
     handleNext,
+    handleFileUpload,
+    handleDivisorChange,
+    handleNumberChange,
+    handleRowDivisorChange,
+    handleSort,
+    setSortOrder,
+    sortOrder,
+    runningTimes,
     currentData,
     totalPages,
   };
 };
+
+// Merge sort and quicksort implementations
+const mergeSortRecursive = (arr) => { /* Recursive implementation */ };
+const mergeSortIterative = (arr) => { /* Iterative implementation */ };
+const quickSortRecursive = (arr) => { /* Recursive implementation */ };
+const quickSortIterative = (arr) => { /* Iterative implementation */ };
 
 export default useUploadCSV;

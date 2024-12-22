@@ -8,7 +8,7 @@ export default function AnalyzeAlgorithm() {
     <main className="flex-grow  overflow-hidden bg-gray-500 ">
       <div className="container max-w-screen-sm mx-auto md:max-w-screen-md lg:max-w-screen-xl md:my-6 lg:my-10 bg-white md:rounded-lg lg:rounded-xl ">
         <AboutHeader />
-        <ModuloAnalyzer />
+        {/* <ModuloAnalyzer /> */}
         <TableViewUploadCSV />
       </div>
     </main>
