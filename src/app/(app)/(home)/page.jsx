@@ -1,6 +1,5 @@
 import AboutHeader from "@/app/containers/about-page/header-section";
 import ModuloCalculator from "@/app/containers/modulo-calculate-page/modulo-calculator-section";
-import Image from "next/image";
 
 export default function Home() {
   return (

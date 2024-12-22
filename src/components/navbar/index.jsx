@@ -36,7 +36,7 @@ export default function Navbar() {
     <nav
       className={`${
         isScrolled
-          ? "bg-blue-950/60 backdrop-blur-3xl"
+          ? "bg-white border-gray-200 dark:bg-blue-950"
           : "bg-white border-gray-200 dark:bg-blue-950"
       } transition-all fixed z-50 top-0 left-0 right-0`}
     >
@@ -87,16 +87,16 @@ export default function Navbar() {
               <li key={href}>
                 <Link
                   href={href}
-                  className={`block py-2 px-3 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white  dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent ${
+                  className={`block py-2 px-3 hover:bg-gray-100 md:hover:bg-transparent md:border-0  md:hover:text-blue-700 md:p-0 dark:text-white  dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent ${
                     pathname === href
-                      ? "text-blue-700 font-bold"
+                      ? "text-blue-950 font-semibold"
                       : "text-gray-900"
                   }`}
                 >
-                  <p class="group relative w-max">
+                  <p className="group relative w-max">
                     <span>{label}</span>
-                    <span class="absolute -bottom-1 left-1/2 w-0 transition-all h-0.5 duration-300 bg-white group-hover:w-3/6"></span>
-                    <span class="absolute -bottom-1 right-1/2 w-0 transition-all h-0.5 duration-300 bg-white group-hover:w-3/6"></span>
+                    <span className="absolute -bottom-1 left-1/2 w-0 transition-all h-0.5 duration-300 bg-white group-hover:w-3/6"></span>
+                    <span className="absolute -bottom-1 right-1/2 w-0 transition-all h-0.5 duration-300 bg-white group-hover:w-3/6"></span>
                   </p>
                 </Link>
               </li>

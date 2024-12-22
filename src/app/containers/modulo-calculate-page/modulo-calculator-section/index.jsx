@@ -15,7 +15,7 @@ export default function ModuloCalculator() {
   return (
     <main className="container mx-auto p-4">
       <div>
-        <div className="bg-green-500 p-2 rounded-lg">
+        <div className="bg-blue-950 p-2 rounded-lg">
           <h1 className="heading3 text-white text-center">Enter your calculate</h1>
         </div>
         <div className="grid grid-cols-3 px-16 my-5">
