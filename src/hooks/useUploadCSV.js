@@ -1,6 +1,23 @@
 "use client";
 import { useState } from "react";
 import Papa from "papaparse";
+import {
+  Chart as ChartJS,
+  BarElement,
+  CategoryScale,
+  LinearScale,
+  Tooltip,
+  Legend,
+} from "chart.js";
+
+// Register chart elements
+ChartJS.register(
+  BarElement,
+  CategoryScale,
+  LinearScale,
+  Tooltip,
+  Legend
+);
 
 const useUploadCSV = () => {
   const [data, setData] = useState([]);
@@ -70,7 +87,7 @@ const useUploadCSV = () => {
       )
     );
   };
-  
+
   const handleSort = () => {
     const numbers = data.map((item) => item.number);
     const startTimes = {};
@@ -111,6 +128,24 @@ const useUploadCSV = () => {
     });
   };
 
+  // Calculate and update the chart data with only the top 50 largest modulo values
+  const top50Data = data
+    .sort((a, b) => b.modulo - a.modulo) // Sort in descending order of modulo
+    .slice(0, 50); // Take top 50 largest modulo values
+
+  const chartData = {
+    labels: top50Data.map((item) => `ID ${item.id}`), // Display ID for each value
+    datasets: [
+      {
+        label: "Modulo 50 Largest Values",
+        data: top50Data.map((item) => item.modulo),
+        backgroundColor: "rgba(75, 192, 192, 1)", // Bar color
+        borderColor: "rgba(75, 192, 192, 1)",
+        borderWidth: 1,
+      },
+    ],
+  };
+
   const totalPages = Math.ceil(data.length / itemsPerPage);
   const currentData = data.slice(
     (currentPage - 1) * itemsPerPage,
@@ -145,6 +180,7 @@ const useUploadCSV = () => {
     runningTimes,
     currentData,
     totalPages,
+    chartData,
   };
 };
 

@@ -1,5 +1,4 @@
 "use client";
-import React from "react";
 import { useState } from "react";
 import useUploadCSV from "@/hooks/useUploadCSV";
 import { Line } from "react-chartjs-2";
@@ -7,20 +6,22 @@ import {
   Chart as ChartJS,
   LineElement,
   PointElement,
-  LinearScale,
   CategoryScale,
+  LinearScale,
   Tooltip,
   Legend,
 } from "chart.js";
 
+// Register Bar chart components
 ChartJS.register(
   LineElement,
   PointElement,
-  LinearScale,
   CategoryScale,
+  LinearScale,
   Tooltip,
   Legend
 );
+
 const TableViewUploadCSV = () => {
   const {
     data,
@@ -37,10 +38,11 @@ const TableViewUploadCSV = () => {
     handleNext,
     currentData,
     totalPages,
+    handleSort,
   } = useUploadCSV();
 
   const [sortOrder, setSortOrder] = useState("asc");
-  const [sortedData, setSortedData] = useState([]);
+  const [sortedData, setSortedData] = useState(data);
   const [chartData, setChartData] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -48,45 +50,65 @@ const TableViewUploadCSV = () => {
     setLoading(true);
     try {
       const executionTimes = {
-        mergeSort: { iterative: [], recursive: [] },
-        quickSort: { iterative: [], recursive: [] },
+        mergeSortIterative: 0,
+        mergeSortRecursive: 0,
+        quickSortIterative: 0,
+        quickSortRecursive: 0,
       };
-    
+
       const measureExecutionTime = (sortingFn, arr) => {
-        const start = performance.now();
-        sortingFn(arr);
-        const end = performance.now();
+        const start = performance.now() / 1000;
+        sortingFn([...arr]);
+        const end = performance.now() / 1000;
         return end - start;
       };
-    
+
+      const numbers = dataset.map((item) => item.number);
+
+      // Define sorting functions
       const recursiveMergeSort = (arr) => {
-        if (arr.length <= 1) return arr;
-        const mid = Math.floor(arr.length / 2);
-        const left = recursiveMergeSort(arr.slice(0, mid));
-        const right = recursiveMergeSort(arr.slice(mid));
-        return merge(left, right);
-      };
-    
-      const iterativeMergeSort = (arr) => {
-        let step = 1;
-        while (step < arr.length) {
-          for (let i = 0; i < arr.length; i += step * 2) {
-            const left = arr.slice(i, i + step);
-            const right = arr.slice(i + step, i + step * 2);
-            merge(left, right);
-          }
-          step *= 2;
+        if (arr.length <= 1) {
+          return arr;
+        } else {
+          const mid = Math.floor(arr.length / 2);
+          const left = recursiveMergeSort(arr.slice(0, mid));
+          const right = recursiveMergeSort(arr.slice(mid));
+          return merge(left, right);
         }
       };
-    
-      const recursiveQuickSort = (arr) => {
-        if (arr.length <= 1) return arr;
-        const pivot = arr[arr.length - 1];
-        const left = arr.filter((item) => item < pivot);
-        const right = arr.filter((item) => item > pivot);
-        return [...recursiveQuickSort(left), pivot, ...recursiveQuickSort(right)];
+
+      const iterativeMergeSort = (arr) => {
+        if (arr.length <= 1) {
+          return arr;
+        } else {
+          let step = 1;
+          while (step < arr.length) {
+            for (let i = 0; i < arr.length; i += step * 2) {
+              const left = arr.slice(i, i + step);
+              const right = arr.slice(i + step, i + step * 2);
+              merge(left, right);
+            }
+            step *= 2;
+          }
+          return arr;
+        }
       };
-    
+
+      const recursiveQuickSort = (arr) => {
+        if (arr.length <= 1) {
+          return arr;
+        } else {
+          const pivot = arr[arr.length - 1];
+          const left = arr.filter((item) => item < pivot);
+          const right = arr.filter((item) => item > pivot);
+          return [
+            ...recursiveQuickSort(left),
+            pivot,
+            ...recursiveQuickSort(right),
+          ];
+        }
+      };
+
       const iterativeQuickSort = (arr) => {
         const stack = [arr];
         const result = [];
@@ -103,7 +125,7 @@ const TableViewUploadCSV = () => {
         }
         return result;
       };
-    
+
       const merge = (left, right) => {
         const result = [];
         while (left.length && right.length) {
@@ -111,74 +133,92 @@ const TableViewUploadCSV = () => {
         }
         return [...result, ...left, ...right];
       };
-    
-      const moduloValues = dataset.map((item) => item.modulo);
-    
-      moduloValues.forEach((modulo) => {
-        const filteredData = dataset.filter((item) => item.modulo === modulo).map((item) => item.number);
-    
-        executionTimes.mergeSort.iterative.push(
-          measureExecutionTime(iterativeMergeSort, [...filteredData])
-        );
-        executionTimes.mergeSort.recursive.push(
-          measureExecutionTime(recursiveMergeSort, [...filteredData])
-        );
-        executionTimes.quickSort.iterative.push(
-          measureExecutionTime(iterativeQuickSort, [...filteredData])
-        );
-        executionTimes.quickSort.recursive.push(
-          measureExecutionTime(recursiveQuickSort, [...filteredData])
-        );
-      });
-    
+
+      // Measure execution times
+      executionTimes.mergeSortIterative = measureExecutionTime(
+        iterativeMergeSort,
+        numbers
+      );
+      executionTimes.mergeSortRecursive = measureExecutionTime(
+        recursiveMergeSort,
+        numbers
+      );
+      executionTimes.quickSortIterative = measureExecutionTime(
+        iterativeQuickSort,
+        numbers
+      );
+      executionTimes.quickSortRecursive = measureExecutionTime(
+        recursiveQuickSort,
+        numbers
+      );
+      const algorithmInfo = [
+        {
+          name: "MergeSort Iterative",
+          executionTime: executionTimes.mergeSortIterative,
+          complexity: "O(n log n)",
+        },
+        {
+          name: "MergeSort Recursive",
+          executionTime: executionTimes.mergeSortRecursive,
+          complexity: "O(n log n)",
+        },
+        {
+          name: "QuickSort Iterative",
+          executionTime: executionTimes.quickSortIterative,
+          complexity: "O(n log n)",
+        },
+        {
+          name: "QuickSort Recursive",
+          executionTime: executionTimes.quickSortRecursive,
+          complexity: "O(n²) (worst case)",
+        },
+      ];
+
+      setSortedData(algorithmInfo);
+      // Prepare chart data
       setChartData({
-        labels: moduloValues,
+        labels: [
+          "MergeSort Iterative",
+          "MergeSort Recursive",
+          "QuickSort Iterative",
+          "QuickSort Recursive",
+        ],
         datasets: [
           {
-            label: "Iterative MergeSort",
-            data: executionTimes.mergeSort.iterative,
-            borderColor: "rgba(255, 99, 132, 1)",
-            backgroundColor: "rgba(255, 99, 132, 0.2)",
+            label: "Execution Time (ms)",
+            data: [
+              executionTimes.mergeSortIterative,
+              executionTimes.mergeSortRecursive,
+              executionTimes.quickSortIterative,
+              executionTimes.quickSortRecursive,
+            ],
+            backgroundColor: [
+              "rgba(255, 99, 132, 0.6)",
+              "rgba(54, 162, 235, 0.6)",
+              "rgba(75, 192, 192, 0.6)",
+              "rgba(153, 102, 255, 0.6)",
+            ],
+            borderColor: [
+              "rgba(255, 99, 132, 1)",
+              "rgba(54, 162, 235, 1)",
+              "rgba(75, 192, 192, 1)",
+              "rgba(153, 102, 255, 1)",
+            ],
             borderWidth: 1,
-            fill: false,
-          },
-          {
-            label: "Recursive MergeSort",
-            data: executionTimes.mergeSort.recursive,
-            borderColor: "rgba(54, 162, 235, 1)",
-            backgroundColor: "rgba(54, 162, 235, 0.2)",
-            borderWidth: 1,
-            fill: false,
-          },
-          {
-            label: "Iterative QuickSort",
-            data: executionTimes.quickSort.iterative,
-            borderColor: "rgba(75, 192, 192, 1)",
-            backgroundColor: "rgba(75, 192, 192, 0.2)",
-            borderWidth: 1,
-            fill: false,
-          },
-          {
-            label: "Recursive QuickSort",
-            data: executionTimes.quickSort.recursive,
-            borderColor: "rgba(153, 102, 255, 1)",
-            backgroundColor: "rgba(153, 102, 255, 0.2)",
-            borderWidth: 1,
-            fill: false,
           },
         ],
       });
     } catch (error) {
       console.error("Error processing sorting analysis:", error);
     } finally {
-      setLoading(false); // Matikan loading setelah selesai
+      setLoading(false);
     }
   };
 
   const sortData = (method) => {
     const isAscending = sortOrder === "asc";
     const sorted = [...data].sort((a, b) =>
-      isAscending ? a.number - b.number : b.number - a.number
+      isAscending ? a.modulo - b.modulo : b.modulo - a.modulo
     );
     setSortOrder(isAscending ? "desc" : "asc");
     setSortedData(sorted);
@@ -203,9 +243,9 @@ const TableViewUploadCSV = () => {
 
       <button
         style={styles.sortButton}
-        onClick={() => sortData(sortOrder === "asc" ? "asc" : "desc")}
+        onClick={() => sortData(sortOrder === "asc")}
       >
-        Sort {sortOrder === "asc" ? "Ascending" : "Descending"}
+        Analyze Sorting
       </button>
 
       {data.length > 0 && (
@@ -308,6 +348,30 @@ const TableViewUploadCSV = () => {
               <Line data={chartData} options={styles.chartOptions} />
             </div>
           )}
+
+          <h2>Algorithm Performance</h2>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "20px" }}>
+            {sortedData.map((algorithm, index) => (
+              <div
+                key={index}
+                style={{
+                  border: "1px solid #ddd",
+                  borderRadius: "8px",
+                  padding: "15px",
+                  width: "250px",
+                  boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
+                }}
+              >
+                <h3>{algorithm.name}</h3>
+                <p>
+                  <strong>Execution Time:</strong> {algorithm.executionTime}
+                </p>
+                <p>
+                  <strong>Class Complexity:</strong> {algorithm.complexity}
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>
